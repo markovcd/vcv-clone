@@ -1,0 +1,1 @@
+public record ModuleDescription(string Value);

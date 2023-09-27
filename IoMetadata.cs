@@ -1,0 +1,1 @@
+public record IoMetadata(string Name);

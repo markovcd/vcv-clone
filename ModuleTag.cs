@@ -1,0 +1,1 @@
+public record ModuleTag(string Name);

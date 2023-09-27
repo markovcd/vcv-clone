@@ -1,0 +1,1 @@
+public record ControlIdentifier(string Value);

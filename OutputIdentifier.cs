@@ -1,0 +1,1 @@
+public record OutputIdentifier(string Value);
