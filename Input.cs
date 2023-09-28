@@ -19,17 +19,20 @@ public record Input(InputIdentifier Identifier, IoMetadata Metadata)
   
   public void Disconnect()
   {
-    Output?.DisconnectInternal(Identifier);
+    Output?.DisconnectInternal(this);
     DisconnectInternal();
   }
 
   internal void ConnectInternal(Output output)
   {
+    if (output == Output) throw new InvalidOperationException("output is already connected"); // todo
+    if (Output is not null) throw new InvalidOperationException("there is already other output connected"); // todo
     Output = output;
   }
 
   internal void DisconnectInternal()
   {
+    if (Output is null) throw new InvalidOperationException("no output connected");
     Output = null;
   }
 }

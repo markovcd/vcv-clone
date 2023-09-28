@@ -13,8 +13,8 @@ public class TestModule : IModule
   public IEnumerable<Output> Outputs => new[] { output1, output2 };
 
   public IEnumerable<Control> Controls => new[] { attenuation };
-    
-  public void Process()
+  
+  public void Process(SampleRate sampleRate, SampleTime sampleTime, SampleIndex sampleIndex)
   {
     if (!input.IsConnected) return;
         

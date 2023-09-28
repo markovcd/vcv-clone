@@ -6,5 +6,5 @@ public interface IModule
   IEnumerable<Output> Outputs { get; }
   IEnumerable<Control> Controls { get; }
 
-  void Process();
+  void Process(SampleRate sampleRate, SampleTime sampleTime, SampleIndex sampleIndex);
 }

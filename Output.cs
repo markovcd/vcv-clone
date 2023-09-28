@@ -1,6 +1,6 @@
 public record Output(OutputIdentifier Identifier, IoMetadata Metadata)
 {
-  private readonly Dictionary<InputIdentifier, Input> inputs = new();
+  private readonly HashSet<Input> inputs = new();
   
   public SignalValue Value { get; private set; }
 
@@ -13,16 +13,15 @@ public record Output(OutputIdentifier Identifier, IoMetadata Metadata)
     input.ConnectInternal(this);
   }
 
-  public void Disconnect(InputIdentifier identifier)
+  public void Disconnect(Input input)
   {
-    if (!inputs.TryGetValue(identifier, out var input)) return;
-    DisconnectInternal(identifier);
+    DisconnectInternal(input);
     input.DisconnectInternal();
   }
 
   public void Disconnect()
   {
-    foreach (var input in inputs.Values)
+    foreach (var input in inputs)
       input.DisconnectInternal();
     
     inputs.Clear();
@@ -30,12 +29,12 @@ public record Output(OutputIdentifier Identifier, IoMetadata Metadata)
   
   internal void ConnectInternal(Input input)
   {
-    inputs.Add(input.Identifier, input);
+    if (!inputs.Add(input)) throw new InvalidOperationException(" input is already connected"); // TODO
   }
 
-  internal void DisconnectInternal(InputIdentifier input)
+  internal void DisconnectInternal(Input input)
   {
-    inputs.Remove(input);
+    if (!inputs.Remove(input)) throw new InvalidOperationException(" input is not connected"); // TODO
   }
   
   public void UpdateValue(SignalValue value)

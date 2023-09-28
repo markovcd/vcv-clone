@@ -16,12 +16,10 @@ public class Project
         modules.Remove(identifier);
     }
 
-    public void Process()
+    public void Process(SampleRate sampleRate, SampleTime sampleTime, SampleIndex sampleIndex)
     {
         foreach (var instance in modules.Values)
-        {
-            instance.Module.Process();
-        }
+            instance.Module.Process(sampleRate, sampleTime, sampleIndex);
     }
 
     public void Connect(
