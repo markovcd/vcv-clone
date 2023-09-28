@@ -1,1 +1,1 @@
-public record ControlIdentifier(string Value);
+public record ControlMetadata(bool ShouldBeRandomized);

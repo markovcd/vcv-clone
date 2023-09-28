@@ -3,7 +3,7 @@ public class TestModule : IModule
   private readonly Input input = new(new InputIdentifier("In"), new IoMetadata("Input"));
   private readonly Output output1 = new(new OutputIdentifier("Out1"), new IoMetadata("Output 1"));
   private readonly Output output2 = new(new OutputIdentifier("Out2"), new IoMetadata("Output 2"));
-  private readonly Control attenuation = new(new ControlIdentifier("Attenuation"), 0, 1, 1);
+  private readonly Control attenuation = new(new ControlIdentifier("Attenuation"), new ControlMetadata(true), 0, 1, 1);
     
   public ModuleIdentifier Identifier { get; } = new (typeof(TestModule).FullName!);
   public ModuleMetadata Metadata { get; }

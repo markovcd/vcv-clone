@@ -54,9 +54,26 @@ public record ModuleInstance(InstanceIdentifier Identifier, IModule Module)
     {
         return Module.Outputs.FirstOrDefault(i => i.Identifier == identifier) ?? throw new IoNotFoundException();
     }
+
+    public void ChangeValue(ControlIdentifier identifier, ControlValue value)
+    {
+        GetControl(identifier).ChangeValue(value);
+    }
     
     public Control GetControl(ControlIdentifier identifier)
     {
         return Module.Controls.FirstOrDefault(i => i.Identifier == identifier) ?? throw new ControlNotFoundException();
+    }
+
+    public void RandomizeControls()
+    {
+        foreach (var control in Module.Controls.Where(c => c.Metadata.ShouldBeRandomized))
+          control.Randomize();
+    }
+
+    public void ResetControls()
+    {
+        foreach (var control in Module.Controls)
+            control.Reset();
     }
 }

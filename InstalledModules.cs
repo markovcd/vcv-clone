@@ -6,11 +6,11 @@ public static class InstalledModules
     private static ImmutableDictionary<ModuleIdentifier, IModule> modules =
         ImmutableDictionary<ModuleIdentifier, IModule>.Empty;
     
-    private static ImmutableDictionary<ModuleIdentifier, IModule> GetModules()
+    private static ImmutableDictionary<ModuleIdentifier, IModule> GetModules(Assembly assembly)
     {
-        return Assembly.GetExecutingAssembly()
-            .GetTypes()
+        return assembly.GetTypes()
             .Where(t => t.GetInterfaces().Contains(typeof(IModule)))
+            .Where(t => t.IsPublic)
             .Select(Activator.CreateInstance)
             .OfType<IModule>()
             .ToImmutableDictionary(m => m.Identifier, m => m);
@@ -18,7 +18,7 @@ public static class InstalledModules
 
     public static void Load()
     {
-        modules = GetModules();
+        modules = GetModules(Assembly.GetExecutingAssembly());
     }
     
     public static ModuleInstance Get(ModuleIdentifier identifier)

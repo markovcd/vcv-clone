@@ -42,7 +42,7 @@ public class Project
 
     public void ChangeControlValue(InstanceIdentifier destination, ControlIdentifier control, ControlValue value)
     {
-        GetModule(destination).GetControl(control).ChangeValue(value);
+        GetModule(destination).ChangeValue(control, value);
     }
     
     public ModuleInstance GetModule(InstanceIdentifier identifier)
