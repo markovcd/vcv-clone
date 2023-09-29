@@ -1,1 +1,0 @@
-public record ModuleCollection(string Name);
