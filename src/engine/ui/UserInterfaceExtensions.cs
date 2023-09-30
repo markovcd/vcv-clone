@@ -9,10 +9,10 @@ internal static class UserInterfaceExtensions
 {
   internal static void InitializeUserInterface(this IUserInterface ui, Control control)
   {
-    
     var uiControl = ui.GetUiControl(control.Metadata.Identifier);
-    uiControl.Tag = control;
-        
+    AttachedProperties.SetParentUi(uiControl, ui);
+    AttachedProperties.SetAssociatedControl(uiControl, control);
+    
     if (uiControl is RangeBase rangeBase)
     {
       rangeBase.Minimum = control.Metadata.Minimum;
@@ -89,14 +89,12 @@ internal static class UserInterfaceExtensions
     
   private static Control GetControlFromSender(object sender)
   {
-    if (sender is FrameworkElement { Tag: Control control }) return control;
-    throw new InvalidOperationException();
+    return AttachedProperties.GetAssociatedControl((FrameworkElement)sender);
   }
   
   private static IUserInterface GetUiFromSender(object sender)
   {
-    if (sender is IUserInterface ui) return ui;
-    throw new InvalidOperationException();
+    return AttachedProperties.GetParentUi((FrameworkElement)sender);
   }
   
   private static Input GetInputFromSender(object sender)
