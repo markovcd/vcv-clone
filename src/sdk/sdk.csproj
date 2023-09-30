@@ -7,8 +7,4 @@
         <ImplicitUsings>true</ImplicitUsings>
     </PropertyGroup>
 
-    <ItemGroup>
-      <Folder Include="obj\Debug\net7.0-windows\" />
-    </ItemGroup>
-
 </Project>
