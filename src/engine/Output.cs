@@ -1,5 +1,7 @@
 using sdk;
 
+namespace engine;
+
 public class Output
 {
   private readonly sdk.Output sdkOutput;

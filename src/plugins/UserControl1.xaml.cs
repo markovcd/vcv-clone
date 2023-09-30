@@ -1,4 +1,5 @@
 using sdk;
+using sdk.ui;
 
 namespace plugins;
 
@@ -9,5 +10,14 @@ public partial class UserControl1 : IUserInterface
     InitializeComponent();
   }
 
-  public ModuleIdentifier Identifier { get; } = typeof(TestModule).FullName!;
+  public ModuleIdentifier Identifier => "Penis";
+  
+  public void ControlChanged(ControlIdentifier identifier, ControlValue value)
+  {
+  }
+  
+  public void PortsChanged(IEnumerable<(PortIdentifier identifier, ControlValue value)> ports)
+  {
+  }
+  
 }

@@ -1,17 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
+using engine;
 
-namespace MainUi
+namespace main;
+
+public partial class App : Application
 {
-  /// <summary>
-  /// Interaction logic for App.xaml
-  /// </summary>
-  public partial class App : Application
+
+  
+  protected override void OnStartup(StartupEventArgs e)
   {
+    var events = new Events();
+    var patch = new Patch(events);
+    var vm = new MainViewModel(events, events, patch);
+      
+    var window = new Window1
+    {
+      DataContext = vm
+    };
+      
+    window.Show();
+      
+    vm.Initialize();
   }
 }

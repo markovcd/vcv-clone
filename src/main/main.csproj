@@ -6,11 +6,11 @@
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <ImplicitUsings>true</ImplicitUsings>
-        <RootNamespace>MainUi</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\engine\engine.csproj" />
+      <ProjectReference Include="..\plugins\plugins.csproj" />
     </ItemGroup>
 
 </Project>

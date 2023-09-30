@@ -1,5 +1,7 @@
 using sdk;
 
+namespace engine;
+
 public class Input
 {
   private Output? connectedOutput;

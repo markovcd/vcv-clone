@@ -3,10 +3,13 @@ using System.Windows.Controls.Primitives;
 using sdk;
 using sdk.ui;
 
+namespace engine.ui;
+
 internal static class UserInterfaceExtensions
 {
   internal static void InitializeUserInterface(this IUserInterface ui, Control control)
   {
+    
     var uiControl = ui.GetUiControl(control.Metadata.Identifier);
     uiControl.Tag = control;
         
@@ -20,8 +23,8 @@ internal static class UserInterfaceExtensions
 
     if (uiControl is ToggleButton toggleButton)
     {
-      toggleButton.Checked += ToggleButtonChecked;
-      toggleButton.Unchecked += ToggleButtonUnchecked;
+      toggleButton.Checked += OnToggleChecked;
+      toggleButton.Unchecked += OnToggleUnchecked;
     }
   }
   
@@ -48,7 +51,8 @@ internal static class UserInterfaceExtensions
   
   private static Port GetUiPort(this IUserInterface ui, PortIdentifier identifier)
   {
-    return ui.AsControl().FindName(identifier) as Port 
+    var c = ui.AsControl();
+    return c.FindName(identifier) as Port 
            ?? throw new InvalidOperationException(identifier); // TODO
   }
 
@@ -70,28 +74,28 @@ internal static class UserInterfaceExtensions
     input.Connect(output);
   }
   
-  private static void ToggleButtonUnchecked(object sender, RoutedEventArgs e)
+  private static void ChangeControlValue(object sender, Func<Control, ControlValue> newValue)
   {
     var control = GetControlFromSender(sender);
-    control.ChangeValue(control.Metadata.Minimum);
+    control.ChangeValue(newValue(control));
+    var ui = GetUiFromSender(sender);
+    ui.ControlChanged(control.Metadata.Identifier, control.Value);
   }
-
-  private static void ToggleButtonChecked(object sender, RoutedEventArgs e)
+  
+  private static void ChangeControlValue(object sender, ControlValue newValue)
   {
-    var control = GetControlFromSender(sender);
-    control.ChangeValue(control.Metadata.Maximum);
-  }
-    
-  private static void OnRangeValueChanged(object sender, RoutedPropertyChangedEventArgs<double> args)
-  {
-    var control = GetControlFromSender(sender);
-
-    control.ChangeValue(args.NewValue);
+    ChangeControlValue(sender, _ => newValue);
   }
     
   private static Control GetControlFromSender(object sender)
   {
     if (sender is FrameworkElement { Tag: Control control }) return control;
+    throw new InvalidOperationException();
+  }
+  
+  private static IUserInterface GetUiFromSender(object sender)
+  {
+    if (sender is IUserInterface ui) return ui;
     throw new InvalidOperationException();
   }
   
@@ -105,5 +109,20 @@ internal static class UserInterfaceExtensions
   {
     if (sender is FrameworkElement { Tag: Output output }) return output;
     throw new InvalidOperationException();
+  }
+  
+  private static void OnToggleUnchecked(object sender, RoutedEventArgs e)
+  {
+    ChangeControlValue(sender, c => c.Metadata.Minimum);
+  }
+
+  private static void OnToggleChecked(object sender, RoutedEventArgs e)
+  {
+    ChangeControlValue(sender, c => c.Metadata.Maximum);
+  }
+    
+  private static void OnRangeValueChanged(object sender, RoutedPropertyChangedEventArgs<double> args)
+  {
+    ChangeControlValue(sender, args.NewValue);
   }
 }

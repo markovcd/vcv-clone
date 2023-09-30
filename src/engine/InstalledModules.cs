@@ -1,6 +1,9 @@
 using System.Collections.Immutable;
 using System.Reflection;
 using sdk;
+using sdk.ui;
+
+namespace engine;
 
 public static class InstalledModules
 {

@@ -3,12 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:sdk="clr-namespace:sdk;assembly=sdk"
              xmlns:ui="clr-namespace:sdk.ui;assembly=sdk"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             Background="Blue"
+             Height="300" Width="300">
   <Grid>
-    <Slider x:Name="Dupa"/>
+    <Slider x:Name="Dupa" Width="100" Height="20"/>
     <ui:Port x:Name="in1" />
+    <ui:Port x:Name="out1" />
   </Grid>
 </UserControl>

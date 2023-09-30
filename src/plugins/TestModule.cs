@@ -19,7 +19,7 @@ public class TestModule : IModule
   }
   
   public ModuleMetadata Metadata { get; } = new (
-    typeof(TestModule).FullName!, 
+    "Penis", 
     "Test!",
     "Jan Paweł II",
     "DD",

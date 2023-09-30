@@ -1,3 +1,5 @@
+namespace engine;
+
 public record InstanceIdentifier(Guid Value)
 {
     public static InstanceIdentifier Generate()

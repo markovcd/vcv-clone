@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\main\engine.csproj" />
+    <Folder Include="obj\Debug\net7.0-windows\" />
   </ItemGroup>
-  
 
+  
 </Project>

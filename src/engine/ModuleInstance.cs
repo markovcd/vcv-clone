@@ -1,15 +1,16 @@
 using System.Collections.Immutable;
+using engine.ui;
 using sdk;
+using sdk.ui;
+
+namespace engine;
 
 public class ModuleInstance
 {
-    private readonly IModule module;
-    private readonly IUserInterface ui;
-    
-    public ModuleInstance(IModule module, IUserInterface ui)
+    public ModuleInstance(IModule module, IUserInterface userInterface)
     {
-        this.module = module ?? throw new InvalidOperationException();
-        this.ui = ui;
+        Module = module;
+        UserInterface = userInterface;
         
         Identifier = InstanceIdentifier.Generate();
         Inputs = module.Inputs.ToImmutableDictionary(m => m.Identifier, m => new Input(m));
@@ -17,6 +18,11 @@ public class ModuleInstance
         Controls = module.Controls.ToImmutableDictionary(m => m.Identifier, m => new Control(m));
     }
     
+    public Position Position { get; set; }
+
+    public IModule Module { get; }
+    
+    public IUserInterface UserInterface { get; }
     public InstanceIdentifier Identifier { get; }
     
     public IReadOnlyDictionary<PortIdentifier, Input> Inputs { get; }
@@ -62,9 +68,12 @@ public class ModuleInstance
     
     public void Process(SampleRate sampleRate, SampleTime sampleTime, SampleIndex sampleIndex)
     {
-        var connectedInputs = Inputs.Where(x => x.Value.IsConnected).Select(x => x.Key);
-        var connectedOutputs = Outputs.Where(x => x.Value.IsConnected).Select(x => x.Key);
-        var connectedPorts = connectedInputs.Concat(connectedOutputs).ToImmutableHashSet();
+        var connectedInputs = Inputs.Where(x => x.Value.IsConnected);
+        var connectedOutputs = Outputs.Where(x => x.Value.IsConnected);
+        
+        var connectedPorts = connectedInputs.Select(x => x.Key)
+            .Concat(connectedOutputs.Select(x => x.Key))
+            .ToImmutableHashSet();
         
         var arguments = new ProcessArguments(
             sampleRate,
@@ -74,18 +83,28 @@ public class ModuleInstance
             connectedPorts,
             Inputs.ToImmutableDictionary(x => x.Key, x => x.Value.Value));
         
-        module.Process(arguments);
+        try
+        {
+            Module.Process(arguments);
+            var values = connectedInputs.Select(i => (i.Key, i.Value.Value))
+                .Concat(connectedOutputs.Select(i => (i.Key, i.Value.Value)));
+            UserInterface.PortsChanged(values);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
     
     public void InitializeUserInterface()
     {
         foreach (var control in Controls.Values)
-            ui.InitializeUserInterface(control);
-
+            UserInterface.InitializeUserInterface(control);
+        
         foreach (var input in Inputs.Values)
-            ui.InitializeUserInterface(input);
+            UserInterface.InitializeUserInterface(input);
         
         foreach (var output in Outputs.Values)
-            ui.InitializeUserInterface(output);
+             UserInterface.InitializeUserInterface(output);
     }
 }
