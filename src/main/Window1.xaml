@@ -5,20 +5,40 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:main"
         xmlns:engine="clr-namespace:engine;assembly=engine"
+        xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="Window1" Height="450" Width="800" d:DataContext="{d:DesignInstance local:MainViewModel}">
-  <ItemsControl ItemsSource="{Binding Modules}">
-    <ItemsControl.ItemsPanel>
-      <ItemsPanelTemplate>
-        <Canvas IsItemsHost="True" />
-      </ItemsPanelTemplate>
-    </ItemsControl.ItemsPanel>
-    <ItemsControl.ItemTemplate>
-      <DataTemplate DataType="{x:Type engine:ModuleInstance}">
-        <Border Canvas.Left="{Binding Position.X}" Canvas.Top="{Binding Position.Y}" BorderThickness="1" BorderBrush="Red">
-          <ContentPresenter  Content="{Binding UserInterface}"/>
-        </Border>
-      </DataTemplate>
-    </ItemsControl.ItemTemplate>
-  </ItemsControl>
+  <Grid>
+    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+      <ItemsControl Background="Bisque" ItemsSource="{Binding Modules}"
+                    MouseRightButtonUp="Canvas_OnMouseRightButtonUp"
+                    PreviewMouseWheel="Canvas_PreviewMouseWheel" Width="{x:Static local:Window1.CanvasWidth}"
+                    Height="{x:Static local:Window1.CanvasHeight}">
+        <b:Interaction.Behaviors>
+          <local:MouseBehaviour />
+        </b:Interaction.Behaviors>
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <Canvas IsItemsHost="True" Loaded="MainCanvas_OnLoaded" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemContainerStyle>
+          <Style TargetType="ContentPresenter">
+            <Setter Property="Canvas.Left" Value="{Binding Position.X}" />
+            <Setter Property="Canvas.Top" Value="{Binding Position.Y}" />
+            <EventSetter Event="MouseLeftButtonUp" Handler="Canvas_MouseLeftButtonUp" />
+            <EventSetter Event="MouseLeftButtonDown" Handler="Canvas_MouseLeftButtonDown" />
+            <EventSetter Event="MouseMove" Handler="Canvas_MouseMove" />
+          </Style>
+        </ItemsControl.ItemContainerStyle>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="{x:Type engine:ModuleInstance}">
+            <Border BorderThickness="1" BorderBrush="RoyalBlue" Background="DarkGray">
+              <ContentPresenter Content="{Binding UserInterface}" />
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
 </Window>

@@ -12,4 +12,7 @@ public interface IUserInterface
   
   void PortsChanged(IReadOnlyList<PortVoltage> ports);
 
+  double ActualWidth { get; }
+  
+  double ActualHeight { get; }
 }

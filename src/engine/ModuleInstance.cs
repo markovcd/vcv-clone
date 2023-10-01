@@ -23,6 +23,7 @@ public class ModuleInstance
     public IModule Module { get; }
     
     public IUserInterface UserInterface { get; }
+    
     public InstanceIdentifier Identifier { get; }
     
     public IReadOnlyList<Input> Inputs { get; }

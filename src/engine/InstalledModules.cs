@@ -37,9 +37,8 @@ public static class InstalledModules
             .OfType<T>();
     }
 
-    public static void Load()
+    public static void Load(Assembly assembly)
     {
-        var assembly = Assembly.GetExecutingAssembly();
         modules = GetModules(assembly);
         uis = GetModuleUis(assembly);
     }
@@ -48,7 +47,13 @@ public static class InstalledModules
     {
         var module = modules.GetValueOrDefault(identifier) ?? throw new ModuleNotFoundException();
         var ui = uis.GetValueOrDefault(identifier) ?? throw new ModuleNotFoundException();
-        return new ModuleInstance(module.Clone(), (IUserInterface)Activator.CreateInstance(ui.GetType())!);
+        return new ModuleInstance(module.Clone(), CloneUi(ui));
+    }
+
+    private static IUserInterface CloneUi(IUserInterface ui)
+    {
+        return System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            (IUserInterface)(Activator.CreateInstance(ui.GetType()) ?? throw new InvalidOperationException()));
     }
     
     public static IEnumerable<ModuleIdentifier> GetByTags(IEnumerable<string> tags)

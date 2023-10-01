@@ -1,40 +1,21 @@
-using System.Collections;
 using System.Windows;
+using engine.ui;
 using sdk;
-using sdk.ui;
 
 namespace engine;
 
-public class Patch : IEnumerable<ModuleInstance>
+public class Patch 
 {
     private readonly Dictionary<InstanceIdentifier, ModuleInstance> modules = new();
-    private readonly IEventNotifier eventNotifier;
-
-    public Patch(IEventNotifier eventNotifier)
-    {
-        this.eventNotifier = eventNotifier;
-    }
-
-
-    public void AddModule(ModuleIdentifier identifier)
+    
+    public InstanceIdentifier AddModule(ModuleIdentifier identifier, Position position)
     {
         var instance = InstalledModules.Get(identifier);
-        AddModule(instance);
-    }
-    
-    public void AddModule(ModuleInstance instance)
-    {
+
+        instance.Position = position;
         modules.Add(instance.Identifier, instance);
         Application.Current.Dispatcher.Invoke(instance.InitializeUserInterface);
-        eventNotifier.Notify(new ModuleAdded(instance.Identifier));
-    }
-    
-    public void AddModule<TModule, TUi>() 
-        where TModule : IModule, new()
-        where TUi : IUserInterface, new()
-    {
-        var instance = new ModuleInstance(new TModule(), new TUi());
-        AddModule(instance);
+        return instance.Identifier;
     }
     
     public void DeleteModule(InstanceIdentifier identifier)
@@ -42,7 +23,6 @@ public class Patch : IEnumerable<ModuleInstance>
         var module = GetModule(identifier);
         module.Disconnect();
         modules.Remove(identifier);
-        eventNotifier.Notify(new ModuleRemoved(identifier));
     }
 
     public void Process(SampleRate sampleRate, SampleTime sampleTime, SampleIndex sampleIndex)
@@ -56,13 +36,5 @@ public class Patch : IEnumerable<ModuleInstance>
         return modules.GetValueOrDefault(identifier) ?? throw new ModuleNotFoundException();
     }
 
-    public IEnumerator<ModuleInstance> GetEnumerator()
-    {
-        return modules.Values.GetEnumerator();
-    }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
 }

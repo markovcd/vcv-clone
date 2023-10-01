@@ -5,7 +5,7 @@ namespace engine.ui;
 
 internal static class AttachedProperties
 {
-  public static readonly DependencyProperty ParentUiProperty = RegisterAttached("ParentUi");
+  public static readonly DependencyProperty ParentUiProperty = RegisterAttached<IUserInterface>("ParentUi");
   
   public static IUserInterface GetParentUi(this DependencyObject obj)
   {
@@ -18,7 +18,7 @@ internal static class AttachedProperties
   }
   
   
-  public static readonly DependencyProperty AssociatedControlProperty = RegisterAttached("AssociatedControl");
+  public static readonly DependencyProperty AssociatedControlProperty = RegisterAttached<Control>("AssociatedControl");
   
   public static Control GetAssociatedControl(this DependencyObject obj)
   {
@@ -31,7 +31,7 @@ internal static class AttachedProperties
   }
   
   
-  public static readonly DependencyProperty AssociatedInputProperty = RegisterAttached("AssociatedInput");
+  public static readonly DependencyProperty AssociatedInputProperty = RegisterAttached<Input>("AssociatedInput");
   
   public static Input GetAssociatedInput(this DependencyObject obj)
   {
@@ -40,11 +40,11 @@ internal static class AttachedProperties
 
   public static void SetAssociatedInput(this DependencyObject obj, Input input)
   {
-    obj.SetValue(AssociatedControlProperty, input);
+    obj.SetValue(AssociatedInputProperty, input);
   }
   
   
-  public static readonly DependencyProperty AssociatedOutputProperty = RegisterAttached("AssociatedOutput");
+  public static readonly DependencyProperty AssociatedOutputProperty = RegisterAttached<Output>("AssociatedOutput");
   
   public static Output GetAssociatedOutput(this DependencyObject obj)
   {
@@ -53,15 +53,15 @@ internal static class AttachedProperties
 
   public static void SetAssociatedOutput(this DependencyObject obj, Output output)
   {
-    obj.SetValue(AssociatedControlProperty, output);
+    obj.SetValue(AssociatedOutputProperty, output);
   }
   
   
-  private static DependencyProperty RegisterAttached(string name)
+  private static DependencyProperty RegisterAttached<T>(string name)
   {
     return DependencyProperty.RegisterAttached(
       name, 
-      typeof(IUserInterface), 
+      typeof(T), 
       typeof(AttachedProperties));
   }
 }
