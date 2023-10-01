@@ -1,6 +1,6 @@
 namespace sdk;
 
-public record ModuleMetadata(
+public readonly record struct ModuleMetadata(
   ModuleIdentifier Identifier,
   string Name,
   string Author,

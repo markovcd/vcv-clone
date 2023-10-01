@@ -14,9 +14,9 @@ public class Output
 
   public bool IsConnected => inputs.Any();
   public PortMetadata Metadata => sdkOutput.Metadata;
-  
-  public ControlValue Value => sdkOutput.Value;
-  
+
+  public PortVoltage PortVoltage => new(Metadata.Identifier, sdkOutput.Value, IsConnected);
+
   public void Connect(Input input)
   {
     ConnectInternal(input);
@@ -33,10 +33,10 @@ public class Output
   {
     foreach (var input in inputs)
       input.DisconnectInternal();
-    
+
     inputs.Clear();
   }
-  
+
   internal void ConnectInternal(Input input)
   {
     if (!inputs.Add(input)) return; //throw new InvalidOperationException(" input is already connected"); // TODO

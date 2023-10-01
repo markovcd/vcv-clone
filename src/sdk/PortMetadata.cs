@@ -1,3 +1,3 @@
 namespace sdk;
 
-public record PortMetadata(PortIdentifier Identifier, string Name);
+public readonly record struct PortMetadata(PortIdentifier Identifier, string Name);

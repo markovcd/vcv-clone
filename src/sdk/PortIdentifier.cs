@@ -1,20 +1,20 @@
 namespace sdk;
 
-public struct PortIdentifier : IEquatable<PortIdentifier>
+public readonly struct PortIdentifier : IEquatable<PortIdentifier>
 {
-  private readonly string value;
+  private readonly byte value;
 
-  private PortIdentifier(string value)
+  private PortIdentifier(byte value)
   {
     this.value = value;
   }
 
-  public static implicit operator PortIdentifier(string value)
+  public static implicit operator PortIdentifier(byte value)
   {
     return new PortIdentifier(value);
   }
 
-  public static implicit operator string(PortIdentifier identifier)
+  public static implicit operator byte(PortIdentifier identifier)
   {
     return identifier.value;
   }

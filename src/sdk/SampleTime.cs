@@ -1,6 +1,6 @@
 namespace sdk;
 
-public struct SampleTime
+public readonly struct SampleTime
 {
   public double Seconds { get; }
   

@@ -1,6 +1,6 @@
 namespace sdk;
 
-public struct ModuleIdentifier : IEquatable<ModuleIdentifier>
+public readonly struct ModuleIdentifier : IEquatable<ModuleIdentifier>
 {
   private readonly string value;
 

@@ -1,20 +1,20 @@
 namespace sdk;
 
-public struct ControlIdentifier : IEquatable<ControlIdentifier>
+public readonly struct ControlIdentifier : IEquatable<ControlIdentifier>
 {
-  private readonly string value;
+  private readonly byte value;
 
-  private ControlIdentifier(string value)
+  private ControlIdentifier(byte value)
   {
     this.value = value;
   }
 
-  public static implicit operator ControlIdentifier(string value)
+  public static implicit operator ControlIdentifier(byte value)
   {
     return new ControlIdentifier(value);
   }
 
-  public static implicit operator string(ControlIdentifier identifier)
+  public static implicit operator byte(ControlIdentifier identifier)
   {
     return identifier.value;
   }

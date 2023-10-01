@@ -1,6 +1,6 @@
 namespace sdk;
 
-public record struct SampleRate
+public readonly struct SampleRate
 {
   public static SampleRate Default => 44100;
   

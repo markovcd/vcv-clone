@@ -1,8 +1,8 @@
 namespace sdk;
 
-public record ControlMetadata(
+public readonly record struct ControlMetadata(
   ControlIdentifier Identifier,
-  ControlValue Minimum, 
-  ControlValue Maximum, 
-  ControlValue Default,
+  Voltage Minimum, 
+  Voltage Maximum, 
+  Voltage Default,
   bool ShouldBeRandomized);

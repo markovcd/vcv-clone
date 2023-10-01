@@ -7,19 +7,21 @@ public class Control
   public Control(ControlMetadata metadata)
   {
     Metadata = metadata;
-    Value = metadata.Default;
+    Voltage = metadata.Default;
   }
     
-  public ControlValue Value { get; private set; }
+  public Voltage Voltage { get; private set; }
+  
+  public ControlVoltage ControlVoltage => new (Metadata.Identifier, Voltage);
   
   public ControlMetadata Metadata { get; }
 
-  public void ChangeValue(ControlValue newValue)
+  public void ChangeValue(Voltage newValue)
   {
     if (newValue < Metadata.Minimum) throw new ArgumentOutOfRangeException(nameof(newValue));
     if (newValue > Metadata.Maximum) throw new ArgumentOutOfRangeException(nameof(newValue));
 
-    Value = newValue;
+    Voltage = newValue;
   }
 
   public void Reset()
@@ -36,7 +38,7 @@ public class Control
   public Control Clone()
   {
     var c = new Control(Metadata);
-    c.ChangeValue(c.Value);
+    c.ChangeValue(c.Voltage);
     return c;
   }
 }

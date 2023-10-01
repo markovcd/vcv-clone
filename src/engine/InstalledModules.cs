@@ -16,7 +16,7 @@ public static class InstalledModules
     private static ImmutableDictionary<ModuleIdentifier, IModule> GetModules(Assembly assembly)
     {
         return GetInstancesImplementing<IModule>(assembly)
-            .Where(m => !string.IsNullOrEmpty(m.Metadata?.Identifier))
+            .Where(m => !string.IsNullOrEmpty(m.Metadata.Identifier))
             .ToImmutableDictionary(m => m.Metadata.Identifier, m => m);
     }
     

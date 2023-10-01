@@ -4,8 +4,12 @@ public interface IUserInterface
 {
   ModuleIdentifier Identifier { get; }
 
-  void ControlChanged(ControlIdentifier identifier, ControlValue value);
+  System.Windows.Controls.Control GetControl(ControlIdentifier identifier);
+
+  Port GetPort(PortIdentifier identifier);
+
+  void ControlChanged(ControlIdentifier identifier, Voltage value);
   
-  void PortsChanged(IEnumerable<(PortIdentifier identifier, ControlValue value)> ports);
+  void PortsChanged(IReadOnlyList<PortVoltage> ports);
 
 }

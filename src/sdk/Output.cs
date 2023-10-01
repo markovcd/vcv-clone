@@ -8,9 +8,9 @@ public class Output
   }
     
   public PortMetadata Metadata { get; }
-  public ControlValue Value { get; private set; }
+  public Voltage Value { get; private set; }
   
-  public void UpdateValue(ControlValue value)
+  public void UpdateValue(Voltage value)
   {
     Value = value;
   }

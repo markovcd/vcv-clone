@@ -13,9 +13,9 @@ public class ModuleInstance
         UserInterface = userInterface;
         
         Identifier = InstanceIdentifier.Generate();
-        Inputs = module.Inputs.ToImmutableDictionary(m => m.Identifier, m => new Input(m));
-        Outputs = module.Outputs.ToImmutableDictionary(m => m.Metadata.Identifier, m => new Output(m));
-        Controls = module.Controls.ToImmutableDictionary(m => m.Identifier, m => new Control(m));
+        Inputs = module.Inputs.Select(m => new Input(m)).ToImmutableList();
+        Outputs = module.Outputs.Select(m => new Output(m)).ToImmutableList();
+        Controls = module.Controls.Select(m => new Control(m)).ToImmutableList();
     }
     
     public Position Position { get; set; }
@@ -25,21 +25,21 @@ public class ModuleInstance
     public IUserInterface UserInterface { get; }
     public InstanceIdentifier Identifier { get; }
     
-    public IReadOnlyDictionary<PortIdentifier, Input> Inputs { get; }
+    public IReadOnlyList<Input> Inputs { get; }
     
-    public IReadOnlyDictionary<PortIdentifier, Output> Outputs { get; }
+    public IReadOnlyList<Output> Outputs { get; }
     
-    public IReadOnlyDictionary<ControlIdentifier, Control> Controls { get; }
+    public IReadOnlyList<Control> Controls { get; }
     
     public void DisconnectInputs()
     {
-        foreach (var input in Inputs.Values)
+        foreach (var input in Inputs)
             input.Disconnect();
     }
     
     public void DisconnectOutputs()
     {
-        foreach (var output in Outputs.Values)
+        foreach (var output in Outputs)
             output.Disconnect();
     }
     
@@ -48,46 +48,36 @@ public class ModuleInstance
         DisconnectInputs();
         DisconnectOutputs();
     }
-
-    public void ChangeValue(ControlIdentifier identifier, ControlValue value)
-    {
-        Controls[identifier].ChangeValue(value);
-    }
     
     public void RandomizeControls()
     {
-        foreach (var control in Controls.Values.Where(c => c.Metadata.ShouldBeRandomized))
+        foreach (var control in Controls.Where(c => c.Metadata.ShouldBeRandomized))
           control.Randomize();
     }
 
     public void ResetControls()
     {
-        foreach (var control in Controls.Values)
+        foreach (var control in Controls)
             control.Reset();
     }
     
     public void Process(SampleRate sampleRate, SampleTime sampleTime, SampleIndex sampleIndex)
     {
-        var connectedInputs = Inputs.Where(x => x.Value.IsConnected);
-        var connectedOutputs = Outputs.Where(x => x.Value.IsConnected);
-        
-        var connectedPorts = connectedInputs.Select(x => x.Key)
-            .Concat(connectedOutputs.Select(x => x.Key))
-            .ToImmutableHashSet();
-        
-        var arguments = new ProcessArguments(
+         var arguments = new ProcessArguments(
             sampleRate,
             sampleTime,
             sampleIndex,
-            Controls.ToImmutableDictionary(x => x.Key, x => x.Value.Value),
-            connectedPorts,
-            Inputs.ToImmutableDictionary(x => x.Key, x => x.Value.Value));
+            Controls.Select(c => c.ControlVoltage).ToImmutableList(),
+            Inputs.Select(x => x.PortVoltage).ToImmutableList(),
+            Outputs.Where(o => o.IsConnected).Select(o => o.Metadata.Identifier).ToImmutableHashSet());
         
         try
         {
             Module.Process(arguments);
-            var values = connectedInputs.Select(i => (i.Key, i.Value.Value))
-                .Concat(connectedOutputs.Select(i => (i.Key, i.Value.Value)));
+            
+            var values = Inputs.Select(i => i.PortVoltage)
+                .Concat(Outputs.Select(o => o.PortVoltage)).ToImmutableList();
+            
             UserInterface.PortsChanged(values);
         }
         catch (Exception e)
@@ -98,13 +88,13 @@ public class ModuleInstance
     
     public void InitializeUserInterface()
     {
-        foreach (var control in Controls.Values)
+        foreach (var control in Controls)
             UserInterface.InitializeUserInterface(control);
         
-        foreach (var input in Inputs.Values)
+        foreach (var input in Inputs)
             UserInterface.InitializeUserInterface(input);
         
-        foreach (var output in Outputs.Values)
+        foreach (var output in Outputs)
              UserInterface.InitializeUserInterface(output);
     }
 }

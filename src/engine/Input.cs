@@ -12,10 +12,10 @@ public class Input
   }
   
   public PortMetadata Metadata { get; }
-
-  public ControlValue Value => connectedOutput?.Value ?? 0;
-
+  
   public bool IsConnected => connectedOutput is not null;
+
+  public PortVoltage PortVoltage => new (Metadata.Identifier, connectedOutput?.PortVoltage.Voltage ?? 0, IsConnected);
   
   public void Duplicate(Input other)
   {

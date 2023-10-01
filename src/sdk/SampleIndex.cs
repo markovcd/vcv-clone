@@ -1,6 +1,6 @@
 namespace sdk;
 
-public struct SampleIndex
+public readonly struct SampleIndex
 {
   private readonly long value;
   
