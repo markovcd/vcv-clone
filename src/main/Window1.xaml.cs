@@ -5,12 +5,13 @@ using System.Windows.Media;
 
 namespace main;
 
-public partial class Window1 : Window
+public partial class Window1 
 {
   private bool isDragging;
   private Point clickPosition;
   private TranslateTransform origin;
   private readonly ScaleTransform scale = new(1, 1);
+  private const int GridSize = 50;
 
   private Canvas mainCanvas = null!;
 
@@ -27,7 +28,15 @@ public partial class Window1 : Window
   private void Canvas_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
   {
     var p = e.GetPosition(mainCanvas);
+    p.X = SnapToGrid(p.X);
+    p.Y = SnapToGrid(p.Y);
+    
     Vm.AddModule(p.X, p.Y);
+  }
+
+  private static double SnapToGrid(double position)
+  {
+    return Math.Floor(position / GridSize) * GridSize;
   }
 
   private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -55,6 +64,10 @@ public partial class Window1 : Window
     var transform = draggable.RenderTransform as TranslateTransform ?? new TranslateTransform();
     transform.X = origin.X + (currentPosition.X - clickPosition.X);
     transform.Y = origin.Y + (currentPosition.Y - clickPosition.Y);
+    
+    transform.X = SnapToGrid(transform.X);
+    transform.Y = SnapToGrid(transform.Y);
+    
     draggable.RenderTransform = new TranslateTransform(transform.X, transform.Y);
   }
 
@@ -88,6 +101,4 @@ public partial class Window1 : Window
     mainCanvas = (Canvas)sender;
     mainCanvas.LayoutTransform = scale;
   }
-
-
 }
