@@ -9,7 +9,7 @@ public partial class Window1
 {
   private bool isDragging;
   private Point clickPosition;
-  private TranslateTransform origin;
+  private Point origin;
   private readonly ScaleTransform scale = new(1, 1);
   private const int GridSize = 50;
 
@@ -42,7 +42,7 @@ public partial class Window1
   private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
   {
     var draggable = (UIElement)sender;
-    origin = draggable.RenderTransform as TranslateTransform ?? new TranslateTransform();
+    origin = new Point(Canvas.GetLeft(draggable), Canvas.GetTop(draggable));
     isDragging = true;
     clickPosition = e.GetPosition(mainCanvas);
     draggable.CaptureMouse();
@@ -61,14 +61,16 @@ public partial class Window1
 
     var draggable = (UIElement)sender;
     var currentPosition = e.GetPosition(mainCanvas);
-    var transform = draggable.RenderTransform as TranslateTransform ?? new TranslateTransform();
-    transform.X = origin.X + (currentPosition.X - clickPosition.X);
-    transform.Y = origin.Y + (currentPosition.Y - clickPosition.Y);
+    //var transform = draggable.RenderTransform as TranslateTransform ?? new TranslateTransform();
+    var x = origin.X + (currentPosition.X - clickPosition.X);
+    var y = origin.Y + (currentPosition.Y - clickPosition.Y);
     
-    transform.X = SnapToGrid(transform.X);
-    transform.Y = SnapToGrid(transform.Y);
+    x = SnapToGrid(x);
+    y = SnapToGrid(y);
     
-    draggable.RenderTransform = new TranslateTransform(transform.X, transform.Y);
+    Canvas.SetLeft(draggable, x);
+    Canvas.SetTop(draggable, y);
+    //draggable.RenderTransform = new TranslateTransform(transform.X, transform.Y);
   }
 
   private void Canvas_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
