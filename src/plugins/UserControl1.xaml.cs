@@ -7,7 +7,7 @@ namespace plugins;
 public partial class UserControl1 : IUserInterface
 {
   private readonly IReadOnlyDictionary<ControlIdentifier, Control> controlMappings; 
-  private readonly IReadOnlyDictionary<PortIdentifier, Port> portMappings; 
+  private readonly IReadOnlyDictionary<PortIdentifier, Connector> portMappings; 
 
   public UserControl1()
   {
@@ -18,7 +18,7 @@ public partial class UserControl1 : IUserInterface
       { TestModule.DupaControl, Dupa }
     };
 
-    portMappings = new Dictionary<PortIdentifier, Port>
+    portMappings = new Dictionary<PortIdentifier, Connector>
     {
       { TestModule.Input1, in1 },
       { TestModule.Output1, out1 }
@@ -32,7 +32,7 @@ public partial class UserControl1 : IUserInterface
     return controlMappings[identifier];
   }
 
-  public Port GetPort(PortIdentifier identifier)
+  public Connector GetPort(PortIdentifier identifier)
   {
     return portMappings[identifier];
   }

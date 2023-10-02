@@ -11,7 +11,7 @@
         <Slider x:Name="Dupa"
                 Width="100"
                 Height="20" />
-        <ui:Port x:Name="in1" />
-        <ui:Port x:Name="out1" />
+        <ui:Connector x:Name="in1" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+        <ui:Connector x:Name="out1" HorizontalAlignment="Right" VerticalAlignment="Top" />
     </Grid>
 </UserControl>

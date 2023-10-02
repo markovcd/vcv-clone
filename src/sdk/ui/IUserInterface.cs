@@ -6,7 +6,7 @@ public interface IUserInterface
 
   System.Windows.Controls.Control GetControl(ControlIdentifier identifier);
 
-  Port GetPort(PortIdentifier identifier);
+  Connector GetPort(PortIdentifier identifier);
 
   void ControlChanged(ControlIdentifier identifier, Voltage value);
   

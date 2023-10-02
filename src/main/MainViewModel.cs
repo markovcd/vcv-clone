@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using engine;
 using engine.ui;
 
@@ -8,14 +9,9 @@ public class MainViewModel
 {
   private readonly Patch patch;
 
-  public MainViewModel(
-    IEventListener<ModuleAdded> moduleAddedListener,
-    IEventListener<ModuleRemoved> moduleRemovedListener,
-    Patch patch)
+  public MainViewModel(Patch patch)
   {
     this.patch = patch;
-    moduleAddedListener.On += e => Modules.Add(this.patch.GetModule(e.Identifier));
-    moduleRemovedListener.On += e => Modules.Remove(Modules.First(m => m.Identifier == e.Identifier));
   }
 
 
@@ -28,5 +24,12 @@ public class MainViewModel
     var identifier = patch.AddModule("Penis", position);
     var module = patch.GetModule(identifier);
     Modules.Add(module);
+  }
+  
+  public ICommand DeleteModuleCommand { get; }
+
+  public void DeleteModule(InstanceIdentifier identifier)
+  {
+    patch.DeleteModule(identifier);
   }
 }

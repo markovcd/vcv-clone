@@ -7,4 +7,12 @@
         <ImplicitUsings>true</ImplicitUsings>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Page Update="ui\Connector.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+
 </Project>

@@ -2,23 +2,33 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using engine;
 using engine.ui;
+using sdk.ui;
 
 namespace main;
 
-public partial class Window1 
+public enum Operation
 {
-  private bool isDragging;
+  None, 
+  DraggingModule,
+  Panning,
+  Connecting
+}
+
+public partial class Window1
+{
+  private Operation operation;
   private Point clickPosition;
   private Point origin;
   private readonly ScaleTransform scale = new(1, 1);
   private const int GridSize = 50;
 
   private Point offset;
-  private bool isPanning;
   
-  private Canvas mainCanvas = null!;
+  private Canvas canvas = null!;
+  private Line? currentLine;
 
   public Window1()
   {
@@ -52,7 +62,7 @@ public partial class Window1
   
   private void AddModule()
   {
-    var p = Mouse.GetPosition(mainCanvas);
+    var p = Mouse.GetPosition(canvas);
     p.X = SnapToGrid(p.X);
     p.Y = SnapToGrid(p.Y);
     var vm = (MainViewModel)DataContext;
@@ -64,7 +74,7 @@ public partial class Window1
     offset = new Point(ModuleListScrollViewer.HorizontalOffset, ModuleListScrollViewer.VerticalOffset);
     clickPosition = Mouse.GetPosition(ModuleListScrollViewer);
 
-    isPanning = true;
+    operation = Operation.Panning;
 
     Mouse.OverrideCursor = Cursors.Hand;
     element.CaptureMouse();
@@ -73,7 +83,7 @@ public partial class Window1
   
   private void Pan() 
   {
-    if (!isPanning) return;
+    if (operation != Operation.Panning) return;
     
     var scrollPosition = Mouse.GetPosition(ModuleListScrollViewer);
     
@@ -83,10 +93,10 @@ public partial class Window1
   
   private bool StopPanning(IInputElement element)
   {
-    if (!isPanning) return false;
+    if (operation != Operation.Panning) return false;
     element.ReleaseMouseCapture();
 
-    isPanning = false;
+    operation = Operation.None;
     Mouse.OverrideCursor = null;
     return true;
   }
@@ -94,22 +104,31 @@ public partial class Window1
   private void StartDraggingModule(UIElement element)
   {
     origin = new Point(Canvas.GetLeft(element), Canvas.GetTop(element));
-    isDragging = true;
-    clickPosition = Mouse.GetPosition(mainCanvas);
+    operation = Operation.DraggingModule;
+    clickPosition = Mouse.GetPosition(canvas);
     element.CaptureMouse();
   }
   
-  private void DragModule(UIElement draggable)
+  private void DragModule(FrameworkElement draggable)
   {
-    if (!isDragging) return;
+    if (operation != Operation.DraggingModule) return;
 
-    var currentPosition = Mouse.GetPosition(mainCanvas);
+    var currentPosition = Mouse.GetPosition(canvas);
     
-    var x = origin.X + (currentPosition.X - clickPosition.X);
-    var y = origin.Y + (currentPosition.Y - clickPosition.Y);
+    var x = SnapToGrid(origin.X + (currentPosition.X - clickPosition.X));
+    var y = SnapToGrid(origin.Y + (currentPosition.Y - clickPosition.Y));
+
+    const int minX = 0;
+    const int minY = 0;
+
+    var maxX = CanvasWidth - draggable.ActualWidth;
+    var maxY = CanvasHeight - draggable.ActualHeight;
     
-    x = SnapToGrid(x);
-    y = SnapToGrid(y);
+    if (x < minX) x = minX;
+    if (y < minY) y = minY;
+    
+    if (x > maxX) x = maxX;
+    if (y > maxY) y = maxY;
     
     Canvas.SetLeft(draggable, x);
     Canvas.SetTop(draggable, y);
@@ -117,9 +136,9 @@ public partial class Window1
   
   private void StopDraggingModule(FrameworkElement element)
   {
-    if (!isDragging) return;
+    if (operation != Operation.DraggingModule) return;
     
-    isDragging = false;
+    operation = Operation.None;
 
     var x = Canvas.GetLeft(element);
     var y = Canvas.GetTop(element);
@@ -137,8 +156,8 @@ public partial class Window1
   
   private void MainCanvas_OnLoaded(object sender, RoutedEventArgs e)
   {
-    mainCanvas = (Canvas)sender;
-    mainCanvas.LayoutTransform = scale;
+    canvas = (Canvas)sender;
+    canvas.LayoutTransform = scale;
   }
   
   private void ModuleList_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -151,14 +170,76 @@ public partial class Window1
   {
     StartDraggingModule((UIElement)sender);
   }
+
+  private void StartConnecting(Connector connector)
+  {
+    operation = Operation.Connecting;
+
+    var startPoint = Mouse.GetPosition(canvas);
+    currentLine = new Line
+    {
+      X1 = startPoint.X,
+      Y1 = startPoint.Y,
+      X2 = startPoint.X,
+      Y2 = startPoint.Y,
+      Stroke = Brushes.Black,
+      StrokeThickness = 2
+    };
+    canvas.Children.Add(currentLine);
+
+    connector.CaptureMouse();
+  }
+  
+  private void DoConnecting()
+  {
+    if (operation != Operation.Connecting) return;
+    var endPoint = Mouse.GetPosition(canvas);
+    currentLine.X2 = endPoint.X;
+    currentLine.Y2 = endPoint.Y;
+  }
+  
+  private void FinishConnecting(object sender)
+  {
+    if (operation != Operation.Connecting) return;
+    if (sender is Connector connector)
+    {
+      var endPoint = Mouse.GetPosition(canvas);
+      currentLine.X2 = endPoint.X;
+      currentLine.Y2 = endPoint.Y;
+
+      connector.ReleaseMouseCapture();
+
+      // Check if the endpoint is over another connector
+      // foreach (var child in canvas.Children)
+      // {
+      //   if (child is UserControl otherConnector && otherConnector != connector)
+      //   {
+      //     Point otherCenter = new Point(Canvas.GetLeft(otherConnector) + otherConnector.Width / 2,
+      //       Canvas.GetTop(otherConnector) + otherConnector.Height / 2);
+      //
+      //     if (Math.Abs(endPoint.X - otherCenter.X) < 5 && Math.Abs(endPoint.Y - otherCenter.Y) < 5)
+      //     {
+      //       // Connect the two connectors (you can add your specific logic here)
+      //       MessageBox.Show("Connected!");
+      //     }
+      //   }
+      // }
+    }
+
+    canvas.Children.Remove(currentLine);
+    currentLine = null;
+    operation = Operation.None;
+  }
   
   private void Module_MouseMove(object sender, MouseEventArgs e)
   {
-    DragModule((UIElement)sender);
+    DoConnecting();
+    DragModule((FrameworkElement)sender);
   }
   
   private void Module_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
   {
+    FinishConnecting(sender);
     StopDraggingModule((FrameworkElement)sender);
   }
   
@@ -176,5 +257,11 @@ public partial class Window1
   {
     if (StopPanning((IInputElement)sender)) return;
     if (e.ChangedButton == MouseButton.Right) AddModule();
+  }
+
+  private void EventSetter_OnHandler(object sender, MouseButtonEventArgs e)
+  {
+    if (sender is Connector connector) StartConnecting(connector);
+    e.Handled = true;
   }
 }

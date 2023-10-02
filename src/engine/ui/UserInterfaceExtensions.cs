@@ -53,7 +53,7 @@ internal static class UserInterfaceExtensions
     uiPort.IsInput = false;
   }
   
-  private static void InputConnectionChanged(object sender, RoutedPropertyChangedEventArgs<Port> e)
+  private static void InputConnectionChanged(object sender, RoutedPropertyChangedEventArgs<Connector> e)
   {
     var input = ((FrameworkElement)sender).GetAssociatedInput();
     if (e.NewValue is null)

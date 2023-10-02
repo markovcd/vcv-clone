@@ -4,22 +4,14 @@ using plugins;
 
 namespace main;
 
-public partial class App : Application
+public partial class App
 {
-
-  
   protected override void OnStartup(StartupEventArgs e)
   {
     InstalledModules.Load(typeof(TestModule).Assembly);
-    var events = new Events();
     var patch = new Patch();
-    var vm = new MainViewModel(events, events, patch);
-    
-      
-    var window = new Window1
-    {
-      DataContext = vm
-    };
+    var vm = new MainViewModel(patch);
+    var window = new Window1 { DataContext = vm };
       
     window.Show();
   }

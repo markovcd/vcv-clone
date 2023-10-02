@@ -33,6 +33,7 @@
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Canvas.Left" Value="{Binding Position.X}" />
                         <Setter Property="Canvas.Top" Value="{Binding Position.Y}" />
+                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="EventSetter_OnHandler"></EventSetter>
                         <EventSetter Event="MouseLeftButtonUp" Handler="Module_MouseLeftButtonUp" />
                         <EventSetter Event="MouseLeftButtonDown" Handler="Module_MouseLeftButtonDown" />
                         <EventSetter Event="MouseMove" Handler="Module_MouseMove" />
