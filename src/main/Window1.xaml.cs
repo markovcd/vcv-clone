@@ -15,9 +15,10 @@ public partial class Window1
   private readonly ScaleTransform scale = new(1, 1);
   private const int GridSize = 50;
 
+  private Point offset;
+  private bool isPanning;
+  
   private Canvas mainCanvas = null!;
-
-  private MainViewModel Vm => (MainViewModel)DataContext;
 
   public Window1()
   {
@@ -26,67 +27,10 @@ public partial class Window1
   
   public static double CanvasWidth => 5000;
   public static double CanvasHeight => 5000;
-
-  private void Canvas_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+  
+  private void Zoom(int delta, FrameworkElement element)
   {
-    var p = e.GetPosition(mainCanvas);
-    p.X = SnapToGrid(p.X);
-    p.Y = SnapToGrid(p.Y);
-    
-    Vm.AddModule(p.X, p.Y);
-  }
-
-  private static double SnapToGrid(double position)
-  {
-    return Math.Floor(position / GridSize) * GridSize;
-  }
-
-  private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-  {
-    var draggable = (UIElement)sender;
-    origin = new Point(Canvas.GetLeft(draggable), Canvas.GetTop(draggable));
-    isDragging = true;
-    clickPosition = e.GetPosition(mainCanvas);
-    draggable.CaptureMouse();
-  }
-
-  private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-  {
-    if (!isDragging) return;
-    
-    isDragging = false;
-    var draggable = (FrameworkElement)sender;
-
-    var x = Canvas.GetLeft(draggable);
-    var y = Canvas.GetTop(draggable);
-    
-    var moduleInstance = (ModuleInstance)draggable.DataContext;
-    moduleInstance.Position = new Position(x, y);
-    
-    draggable.ReleaseMouseCapture();
-  }
-
-  private void Canvas_MouseMove(object sender, MouseEventArgs e)
-  {
-    if (!isDragging) return;
-
-    var draggable = (UIElement)sender;
-    var currentPosition = e.GetPosition(mainCanvas);
-    
-    var x = origin.X + (currentPosition.X - clickPosition.X);
-    var y = origin.Y + (currentPosition.Y - clickPosition.Y);
-    
-    x = SnapToGrid(x);
-    y = SnapToGrid(y);
-    
-    Canvas.SetLeft(draggable, x);
-    Canvas.SetTop(draggable, y);
-    
-  }
-
-  private void Canvas_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-  {
-    var zoomFactor = e.Delta > 0 ? 1.1 : 0.9;
+    var zoomFactor = delta > 0 ? 1.1 : 0.9;
 
     scale.ScaleX *= zoomFactor;
     scale.ScaleY *= zoomFactor;
@@ -102,16 +46,135 @@ public partial class Window1
       scale.ScaleY = 10;
     }
     
-    var fe = (FrameworkElement)sender;
-    fe.Width = CanvasWidth * scale.ScaleX;
-    fe.Height = CanvasHeight * scale.ScaleY;
-
-    e.Handled = true;
+    element.Width = CanvasWidth * scale.ScaleX;
+    element.Height = CanvasHeight * scale.ScaleY;
+  }
+  
+  private void AddModule()
+  {
+    var p = Mouse.GetPosition(mainCanvas);
+    p.X = SnapToGrid(p.X);
+    p.Y = SnapToGrid(p.Y);
+    var vm = (MainViewModel)DataContext;
+    vm.AddModule(p.X, p.Y);
   }
 
+  private void StartPanning(IInputElement element)
+  {
+    offset = new Point(ModuleListScrollViewer.HorizontalOffset, ModuleListScrollViewer.VerticalOffset);
+    clickPosition = Mouse.GetPosition(ModuleListScrollViewer);
+
+    isPanning = true;
+
+    Mouse.OverrideCursor = Cursors.Hand;
+    element.CaptureMouse();
+    element.Focus();
+  }
+  
+  private void Pan() 
+  {
+    if (!isPanning) return;
+    
+    var scrollPosition = Mouse.GetPosition(ModuleListScrollViewer);
+    
+    ModuleListScrollViewer.ScrollToHorizontalOffset(offset.X + (clickPosition.X - scrollPosition.X));
+    ModuleListScrollViewer.ScrollToVerticalOffset(offset.Y + (clickPosition.Y - scrollPosition.Y));
+  }
+  
+  private bool StopPanning(IInputElement element)
+  {
+    if (!isPanning) return false;
+    element.ReleaseMouseCapture();
+
+    isPanning = false;
+    Mouse.OverrideCursor = null;
+    return true;
+  }
+  
+  private void StartDraggingModule(UIElement element)
+  {
+    origin = new Point(Canvas.GetLeft(element), Canvas.GetTop(element));
+    isDragging = true;
+    clickPosition = Mouse.GetPosition(mainCanvas);
+    element.CaptureMouse();
+  }
+  
+  private void DragModule(UIElement draggable)
+  {
+    if (!isDragging) return;
+
+    var currentPosition = Mouse.GetPosition(mainCanvas);
+    
+    var x = origin.X + (currentPosition.X - clickPosition.X);
+    var y = origin.Y + (currentPosition.Y - clickPosition.Y);
+    
+    x = SnapToGrid(x);
+    y = SnapToGrid(y);
+    
+    Canvas.SetLeft(draggable, x);
+    Canvas.SetTop(draggable, y);
+  }
+  
+  private void StopDraggingModule(FrameworkElement element)
+  {
+    if (!isDragging) return;
+    
+    isDragging = false;
+
+    var x = Canvas.GetLeft(element);
+    var y = Canvas.GetTop(element);
+    
+    var moduleInstance = (ModuleInstance)element.DataContext;
+    moduleInstance.Position = new Position(x, y);
+    
+    element.ReleaseMouseCapture();
+  }
+
+  private static double SnapToGrid(double position)
+  {
+    return Math.Floor(position / GridSize) * GridSize;
+  }
+  
   private void MainCanvas_OnLoaded(object sender, RoutedEventArgs e)
   {
     mainCanvas = (Canvas)sender;
     mainCanvas.LayoutTransform = scale;
+  }
+  
+  private void ModuleList_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+  {
+    Zoom(e.Delta, (FrameworkElement)sender);
+    e.Handled = true;
+  }
+
+  private void Module_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+  {
+    StartDraggingModule((UIElement)sender);
+  }
+  
+  private void Module_MouseMove(object sender, MouseEventArgs e)
+  {
+    DragModule((UIElement)sender);
+  }
+  
+  private void Module_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+  {
+    StopDraggingModule((FrameworkElement)sender);
+  }
+  
+  private void ModuleList_OnMouseDown(object sender, MouseButtonEventArgs e)
+  {
+    if (e.ChangedButton == MouseButton.Middle) StartPanning((FrameworkElement)sender);
+  }
+
+  private void ModuleList_OnMouseMove(object sender, MouseEventArgs e)
+  {
+    Pan();
+  }
+  
+  private void ModuleList_OnMouseUp(object sender, MouseButtonEventArgs e)
+  {
+    if (StopPanning((IInputElement)sender)) return;
+    if (e.ChangedButton == MouseButton.Right) AddModule();
   }
 }

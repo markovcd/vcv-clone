@@ -12,16 +12,18 @@
         d:DataContext="{d:DesignInstance local:MainViewModel}"
         mc:Ignorable="d">
     <Grid>
-        <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+        <ScrollViewer x:Name="ModuleListScrollViewer"
+                      HorizontalScrollBarVisibility="Visible"
+                      VerticalScrollBarVisibility="Visible">
             <ItemsControl Width="{x:Static local:Window1.CanvasWidth}"
                           Height="{x:Static local:Window1.CanvasHeight}"
                           Background="Bisque"
                           ItemsSource="{Binding Modules}"
-                          MouseRightButtonUp="Canvas_OnMouseRightButtonUp"
-                          PreviewMouseWheel="Canvas_PreviewMouseWheel">
-                <b:Interaction.Behaviors>
-                    <local:MouseBehaviour />
-                </b:Interaction.Behaviors>
+                          MouseDown="ModuleList_OnMouseDown"
+                          MouseMove="ModuleList_OnMouseMove"
+                          MouseUp="ModuleList_OnMouseUp"
+                          PreviewMouseWheel="ModuleList_PreviewMouseWheel">
+
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas IsItemsHost="True" Loaded="MainCanvas_OnLoaded" />
@@ -31,9 +33,9 @@
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Canvas.Left" Value="{Binding Position.X}" />
                         <Setter Property="Canvas.Top" Value="{Binding Position.Y}" />
-                        <EventSetter Event="MouseLeftButtonUp" Handler="Canvas_MouseLeftButtonUp" />
-                        <EventSetter Event="MouseLeftButtonDown" Handler="Canvas_MouseLeftButtonDown" />
-                        <EventSetter Event="MouseMove" Handler="Canvas_MouseMove" />
+                        <EventSetter Event="MouseLeftButtonUp" Handler="Module_MouseLeftButtonUp" />
+                        <EventSetter Event="MouseLeftButtonDown" Handler="Module_MouseLeftButtonDown" />
+                        <EventSetter Event="MouseMove" Handler="Module_MouseMove" />
                     </Style>
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
