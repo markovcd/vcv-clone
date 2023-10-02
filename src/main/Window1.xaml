@@ -38,18 +38,19 @@
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type engine:ModuleInstance}">
-                        <Border Background="DarkGray"
-                                BorderBrush="RoyalBlue"
-                                BorderThickness="1">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="4"
-                                                  Direction="330"
-                                                  Opacity="0.5"
-                                                  ShadowDepth="4"
-                                                  Color="Gray" />
-                            </Border.Effect>
-                            <ContentPresenter Content="{Binding UserInterface}" />
-                        </Border>
+                        <Grid>
+                            <Border Background="DarkGray">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4"
+                                                      Direction="330"
+                                                      Opacity="0.5"
+                                                      ShadowDepth="4"
+                                                      Color="Gray" />
+                                </Border.Effect>
+                                <ContentPresenter Content="{Binding UserInterface}" />
+                            </Border>
+                            <Border BorderBrush="RoyalBlue" BorderThickness="1" />
+                        </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
