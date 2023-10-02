@@ -2,6 +2,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using engine;
+using engine.ui;
 
 namespace main;
 
@@ -50,8 +52,17 @@ public partial class Window1
 
   private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
   {
+    if (!isDragging) return;
+    
     isDragging = false;
-    var draggable = (UIElement)sender;
+    var draggable = (FrameworkElement)sender;
+
+    var x = Canvas.GetLeft(draggable);
+    var y = Canvas.GetTop(draggable);
+    
+    var moduleInstance = (ModuleInstance)draggable.DataContext;
+    moduleInstance.Position = new Position(x, y);
+    
     draggable.ReleaseMouseCapture();
   }
 
@@ -61,7 +72,7 @@ public partial class Window1
 
     var draggable = (UIElement)sender;
     var currentPosition = e.GetPosition(mainCanvas);
-    //var transform = draggable.RenderTransform as TranslateTransform ?? new TranslateTransform();
+    
     var x = origin.X + (currentPosition.X - clickPosition.X);
     var y = origin.Y + (currentPosition.Y - clickPosition.Y);
     
@@ -70,7 +81,7 @@ public partial class Window1
     
     Canvas.SetLeft(draggable, x);
     Canvas.SetTop(draggable, y);
-    //draggable.RenderTransform = new TranslateTransform(transform.X, transform.Y);
+    
   }
 
   private void Canvas_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -91,9 +102,9 @@ public partial class Window1
       scale.ScaleY = 10;
     }
     
-    var c = sender as FrameworkElement;
-    c.Width = CanvasWidth * scale.ScaleX;
-    c.Height = CanvasHeight * scale.ScaleY;
+    var fe = (FrameworkElement)sender;
+    fe.Width = CanvasWidth * scale.ScaleX;
+    fe.Height = CanvasHeight * scale.ScaleY;
 
     e.Handled = true;
   }
