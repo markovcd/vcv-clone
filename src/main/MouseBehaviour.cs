@@ -73,6 +73,8 @@ public class MouseBehaviour : Behavior<UIElement>
         originalMouseDownPoint = e.GetPosition(scrollViewer);
 
         isPanning = true;
+
+        e.MouseDevice.OverrideCursor = Cursors.Hand;
         canvas.CaptureMouse();
         canvas.Focus();
     }
@@ -85,5 +87,6 @@ public class MouseBehaviour : Behavior<UIElement>
         canvas.ReleaseMouseCapture();
 
         isPanning = false;
+        e.MouseDevice.OverrideCursor = null;
     }
 }
