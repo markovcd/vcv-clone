@@ -15,8 +15,8 @@
         <ScrollViewer x:Name="ModuleListScrollViewer"
                       HorizontalScrollBarVisibility="Visible"
                       VerticalScrollBarVisibility="Visible">
-            <ItemsControl Width="{x:Static local:Window1.CanvasWidth}"
-                          Height="{x:Static local:Window1.CanvasHeight}"
+            <ItemsControl Width="{x:Static local:MainViewModel.CanvasWidth}"
+                          Height="{x:Static local:MainViewModel.CanvasHeight}"
                           Background="Bisque"
                           ItemsSource="{Binding Modules}"
                           MouseDown="ModuleList_OnMouseDown"
@@ -26,14 +26,17 @@
 
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas IsItemsHost="True" Loaded="MainCanvas_OnLoaded" />
+                        <Canvas IsItemsHost="True" Loaded="MainCanvas_OnLoaded">
+                            <Canvas.LayoutTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1" />
+                            </Canvas.LayoutTransform>
+                        </Canvas>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Canvas.Left" Value="{Binding Position.X}" />
                         <Setter Property="Canvas.Top" Value="{Binding Position.Y}" />
-                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="EventSetter_OnHandler"></EventSetter>
                         <EventSetter Event="MouseLeftButtonUp" Handler="Module_MouseLeftButtonUp" />
                         <EventSetter Event="MouseLeftButtonDown" Handler="Module_MouseLeftButtonDown" />
                         <EventSetter Event="MouseMove" Handler="Module_MouseMove" />

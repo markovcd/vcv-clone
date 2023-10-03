@@ -2,167 +2,102 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using engine;
 using engine.ui;
 using sdk.ui;
 
 namespace main;
 
-public enum Operation
-{
-  None, 
-  DraggingModule,
-  Panning,
-  Connecting
-}
-
 public partial class Window1
 {
-  private Operation operation;
-  private Point clickPosition;
-  private Point origin;
-  private readonly ScaleTransform scale = new(1, 1);
-  private const int GridSize = 50;
-
-  private Point offset;
-  
   private Canvas canvas = null!;
-  private Line? currentLine;
+  //private Line? currentLine;
 
   public Window1()
   {
     InitializeComponent();
   }
-  
-  public static double CanvasWidth => 5000;
-  public static double CanvasHeight => 5000;
-  
-  private void Zoom(int delta, FrameworkElement element)
-  {
-    var zoomFactor = delta > 0 ? 1.1 : 0.9;
 
-    scale.ScaleX *= zoomFactor;
-    scale.ScaleY *= zoomFactor;
-    
-    if (scale.ScaleX < 0.1)
-    {
-      scale.ScaleX = 0.1;
-      scale.ScaleY = 0.1;
-    }
-    else if (scale.ScaleX > 10)
-    {
-      scale.ScaleX = 10;
-      scale.ScaleY = 10;
-    }
-    
-    element.Width = CanvasWidth * scale.ScaleX;
-    element.Height = CanvasHeight * scale.ScaleY;
+  private MainViewModel Vm => (MainViewModel)DataContext;
+  
+  private static ModuleInstance GetModuleInstance(object sender)
+  {
+    return (ModuleInstance)((FrameworkElement)sender).DataContext;
   }
   
-  private void AddModule()
-  {
-    var p = Mouse.GetPosition(canvas);
-    p.X = SnapToGrid(p.X);
-    p.Y = SnapToGrid(p.Y);
-    var vm = (MainViewModel)DataContext;
-    vm.AddModule(p.X, p.Y);
-  }
-
   private void StartPanning(IInputElement element)
   {
-    offset = new Point(ModuleListScrollViewer.HorizontalOffset, ModuleListScrollViewer.VerticalOffset);
-    clickPosition = Mouse.GetPosition(ModuleListScrollViewer);
-
-    operation = Operation.Panning;
-
+    if (!Vm.StartPanning(
+      new Position(ModuleListScrollViewer.HorizontalOffset, ModuleListScrollViewer.VerticalOffset),
+      GetScrollViewerMousePosition())) 
+      return;
+    
     Mouse.OverrideCursor = Cursors.Hand;
     element.CaptureMouse();
     element.Focus();
   }
   
-  private void Pan() 
-  {
-    if (operation != Operation.Panning) return;
-    
-    var scrollPosition = Mouse.GetPosition(ModuleListScrollViewer);
-    
-    ModuleListScrollViewer.ScrollToHorizontalOffset(offset.X + (clickPosition.X - scrollPosition.X));
-    ModuleListScrollViewer.ScrollToVerticalOffset(offset.Y + (clickPosition.Y - scrollPosition.Y));
-  }
-  
   private bool StopPanning(IInputElement element)
   {
-    if (operation != Operation.Panning) return false;
+    if (!Vm.StopPanning()) return false;
     element.ReleaseMouseCapture();
-
-    operation = Operation.None;
     Mouse.OverrideCursor = null;
     return true;
   }
   
   private void StartDraggingModule(UIElement element)
   {
-    origin = new Point(Canvas.GetLeft(element), Canvas.GetTop(element));
-    operation = Operation.DraggingModule;
-    clickPosition = Mouse.GetPosition(canvas);
+    if (!Vm.StartDraggingModule(
+          new Position(Canvas.GetLeft(element), Canvas.GetTop(element)),
+          GetCanvasMousePosition())) 
+      return;
+    
     element.CaptureMouse();
+  }
+
+  private Position GetCanvasMousePosition()
+  {
+    var point = Mouse.GetPosition(canvas);
+    return new Position(point.X, point.Y);
+  }
+  
+  private Position GetScrollViewerMousePosition()
+  {
+    var point = Mouse.GetPosition(ModuleListScrollViewer);
+    return new Position(point.X, point.Y);
   }
   
   private void DragModule(FrameworkElement draggable)
   {
-    if (operation != Operation.DraggingModule) return;
-
-    var currentPosition = Mouse.GetPosition(canvas);
-    
-    var x = SnapToGrid(origin.X + (currentPosition.X - clickPosition.X));
-    var y = SnapToGrid(origin.Y + (currentPosition.Y - clickPosition.Y));
-
-    const int minX = 0;
-    const int minY = 0;
-
-    var maxX = CanvasWidth - draggable.ActualWidth;
-    var maxY = CanvasHeight - draggable.ActualHeight;
-    
-    if (x < minX) x = minX;
-    if (y < minY) y = minY;
-    
-    if (x > maxX) x = maxX;
-    if (y > maxY) y = maxY;
-    
-    Canvas.SetLeft(draggable, x);
-    Canvas.SetTop(draggable, y);
+    var mousePosition = GetCanvasMousePosition();
+    var elementPosition = Vm.DragModule(mousePosition, GetModuleInstance(draggable));
+    if (elementPosition is null) return;
+    Canvas.SetLeft(draggable, elementPosition.Value.X);
+    Canvas.SetTop(draggable, elementPosition.Value.Y);
   }
   
   private void StopDraggingModule(FrameworkElement element)
   {
-    if (operation != Operation.DraggingModule) return;
-    
-    operation = Operation.None;
-
-    var x = Canvas.GetLeft(element);
-    var y = Canvas.GetTop(element);
-    
-    var moduleInstance = (ModuleInstance)element.DataContext;
-    moduleInstance.Position = new Position(x, y);
+    if (!Vm.StopDraggingModule(
+          (ModuleInstance)element.DataContext,
+          new Position(Canvas.GetLeft(element), Canvas.GetTop(element))))
+      return;
     
     element.ReleaseMouseCapture();
-  }
-
-  private static double SnapToGrid(double position)
-  {
-    return Math.Floor(position / GridSize) * GridSize;
   }
   
   private void MainCanvas_OnLoaded(object sender, RoutedEventArgs e)
   {
     canvas = (Canvas)sender;
-    canvas.LayoutTransform = scale;
   }
   
   private void ModuleList_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
   {
-    Zoom(e.Delta, (FrameworkElement)sender);
+    var element = (FrameworkElement)sender;
+    var (newScale, newSize) = Vm.Zoom(e.Delta);
+    canvas.LayoutTransform = new ScaleTransform(newScale, newScale);
+    element.Width = newSize.X;
+    element.Height = newSize.Y;
     e.Handled = true;
   }
 
@@ -173,41 +108,41 @@ public partial class Window1
 
   private void StartConnecting(Connector connector)
   {
-    operation = Operation.Connecting;
-
-    var startPoint = Mouse.GetPosition(canvas);
-    currentLine = new Line
-    {
-      X1 = startPoint.X,
-      Y1 = startPoint.Y,
-      X2 = startPoint.X,
-      Y2 = startPoint.Y,
-      Stroke = Brushes.Black,
-      StrokeThickness = 2
-    };
-    canvas.Children.Add(currentLine);
-
-    connector.CaptureMouse();
+    // operation = Operation.Connecting;
+    //
+    // var startPoint = Mouse.GetPosition(canvas);
+    // currentLine = new Line
+    // {
+    //   X1 = startPoint.X,
+    //   Y1 = startPoint.Y,
+    //   X2 = startPoint.X,
+    //   Y2 = startPoint.Y,
+    //   Stroke = Brushes.Black,
+    //   StrokeThickness = 2
+    // };
+    // canvas.Children.Add(currentLine);
+    //
+    // connector.CaptureMouse();
   }
   
   private void DoConnecting()
   {
-    if (operation != Operation.Connecting) return;
-    var endPoint = Mouse.GetPosition(canvas);
-    currentLine.X2 = endPoint.X;
-    currentLine.Y2 = endPoint.Y;
+    // if (operation != Operation.Connecting) return;
+    // var endPoint = Mouse.GetPosition(canvas);
+    // currentLine.X2 = endPoint.X;
+    // currentLine.Y2 = endPoint.Y;
   }
   
   private void FinishConnecting(object sender)
   {
-    if (operation != Operation.Connecting) return;
-    if (sender is Connector connector)
-    {
-      var endPoint = Mouse.GetPosition(canvas);
-      currentLine.X2 = endPoint.X;
-      currentLine.Y2 = endPoint.Y;
-
-      connector.ReleaseMouseCapture();
+    // if (operation != Operation.Connecting) return;
+    // if (sender is Connector connector)
+    // {
+    //   var endPoint = Mouse.GetPosition(canvas);
+    //   currentLine.X2 = endPoint.X;
+    //   currentLine.Y2 = endPoint.Y;
+    //
+    //   connector.ReleaseMouseCapture();
 
       // Check if the endpoint is over another connector
       // foreach (var child in canvas.Children)
@@ -224,11 +159,11 @@ public partial class Window1
       //     }
       //   }
       // }
-    }
-
-    canvas.Children.Remove(currentLine);
-    currentLine = null;
-    operation = Operation.None;
+    // }
+    //
+    // canvas.Children.Remove(currentLine);
+    // currentLine = null;
+    // operation = Operation.None;
   }
   
   private void Module_MouseMove(object sender, MouseEventArgs e)
@@ -250,13 +185,17 @@ public partial class Window1
 
   private void ModuleList_OnMouseMove(object sender, MouseEventArgs e)
   {
-    Pan();
+    var scrollOffset = Vm.Pan(GetScrollViewerMousePosition());
+    if (scrollOffset is null) return;
+    
+    ModuleListScrollViewer.ScrollToHorizontalOffset(scrollOffset.Value.X);
+    ModuleListScrollViewer.ScrollToVerticalOffset(scrollOffset.Value.Y);
   }
   
   private void ModuleList_OnMouseUp(object sender, MouseButtonEventArgs e)
   {
     if (StopPanning((IInputElement)sender)) return;
-    if (e.ChangedButton == MouseButton.Right) AddModule();
+    if (e.ChangedButton == MouseButton.Right) Vm.AddModule(GetCanvasMousePosition());
   }
 
   private void EventSetter_OnHandler(object sender, MouseButtonEventArgs e)
