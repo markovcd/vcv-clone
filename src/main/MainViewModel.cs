@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using engine;
 using engine.ui;
+using sdk;
 
 namespace main;
 
@@ -18,6 +19,7 @@ public class MainViewModel
   public MainViewModel(Patch patch)
   {
     this.patch = patch;
+    DeleteModuleCommand = new DelegateCommand(DeleteModule);
   }
   
   public Operation Operation { get; set; }
@@ -75,9 +77,13 @@ public class MainViewModel
     
   public ObservableCollection<ModuleInstance> Modules { get; } = new ();
 
+  public InstanceIdentifier? CurrentInstance { get; set; }
+  
+  public ModuleIdentifier CurrentModule => "Penis";
+  
   public void AddModule(Position position)
   {
-    var identifier = patch.AddModule("Penis", new Position(SnapToGrid(position.X), SnapToGrid(position.Y)));
+    var identifier = patch.AddModule(CurrentModule, new Position(SnapToGrid(position.X), SnapToGrid(position.Y)));
     var module = patch.GetModule(identifier);
     Modules.Add(module);
   }
@@ -120,11 +126,11 @@ public class MainViewModel
     return (scale, new Position(CanvasWidth * scale, CanvasHeight * scale));
   }
   
-  
-  public ICommand DeleteModuleCommand { get; }
+  public DelegateCommand DeleteModuleCommand { get; }
 
-  public void DeleteModule(InstanceIdentifier identifier)
+  private void DeleteModule()
   {
-    patch.DeleteModule(identifier);
+    if (CurrentInstance is null) return;
+    patch.DeleteModule(CurrentInstance.Value);
   }
 }

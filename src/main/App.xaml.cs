@@ -11,7 +11,7 @@ public partial class App
     InstalledModules.Load(typeof(TestModule).Assembly);
     var patch = new Patch();
     var vm = new MainViewModel(patch);
-    var window = new Window1 { DataContext = vm };
+    var window = new MainWindow { DataContext = vm };
       
     window.Show();
   }
