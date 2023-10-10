@@ -11,8 +11,7 @@ namespace main;
 
 public partial class MainWindow
 {
-  private Canvas canvas = null!;
-  private Line? currentLine;
+  private Canvas canvas = null!, connectorCanvas = null!;
 
   public MainWindow()
   {
@@ -92,13 +91,20 @@ public partial class MainWindow
     canvas = (Canvas)sender;
   }
   
+  private void ConnectorCanvas_OnLoaded(object sender, RoutedEventArgs e)
+  {
+    connectorCanvas = (Canvas)sender;
+  }
+  
   private void ModuleList_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
   {
-    var element = (FrameworkElement)sender;
     var (newScale, newSize) = Vm.Zoom(e.Delta);
     canvas.LayoutTransform = new ScaleTransform(newScale, newScale);
-    element.Width = newSize.X;
-    element.Height = newSize.Y;
+    connectorCanvas.LayoutTransform = new ScaleTransform(newScale, newScale);
+    moduleList.Width = newSize.X;
+    moduleList.Height = newSize.Y;
+    connectionsList.Width = newSize.X;
+    connectionsList.Height = newSize.Y;
     e.Handled = true;
   }
 
@@ -110,57 +116,25 @@ public partial class MainWindow
   private void StartConnecting()
   {
     var startPoint = Mouse.GetPosition(canvas);
-    currentLine = new Line
-    {
-      X1 = startPoint.X,
-      Y1 = startPoint.Y,
-      X2 = startPoint.X,
-      Y2 = startPoint.Y,
-      Stroke = Brushes.Black,
-      StrokeThickness = 2
-    };
-    canvas.Children.Add(currentLine);
+    Vm.StartConnecting(new Position(startPoint.X, startPoint.Y));
+    
     
     canvas.CaptureMouse();
   }
   
   private bool DoConnecting()
   {
-    if (currentLine is null) return false;
-    var endPoint = Mouse.GetPosition(canvas);
-    currentLine.X2 = endPoint.X;
-    currentLine.Y2 = endPoint.Y;
-    return true;
+    var end = Mouse.GetPosition(canvas);
+    return Vm.DoConnecting(new Position(end.X, end.Y));
   }
   
   private bool FinishConnecting()
   {
-    if (!DoConnecting()) return false;
+    var end = Mouse.GetPosition(canvas);
+    if (!Vm.FinishConnecting(new Position(end.X, end.Y))) return false;
     canvas.ReleaseMouseCapture();
-    currentLine = null;
     return true;
 
-
-    // Check if the endpoint is over another connector
-    // foreach (var child in canvas.Children)
-    // {
-    //   if (child is UserControl otherConnector && otherConnector != connector)
-    //   {
-    //     Point otherCenter = new Point(Canvas.GetLeft(otherConnector) + otherConnector.Width / 2,
-    //       Canvas.GetTop(otherConnector) + otherConnector.Height / 2);
-    //
-    //     if (Math.Abs(endPoint.X - otherCenter.X) < 5 && Math.Abs(endPoint.Y - otherCenter.Y) < 5)
-    //     {
-    //       // Connect the two connectors (you can add your specific logic here)
-    //       MessageBox.Show("Connected!");
-    //     }
-    //   }
-    // }
-    // }
-    //
-    // canvas.Children.Remove(currentLine);
-    // currentLine = null;
-    // operation = Operation.None;
   }
   
   private void Module_MouseMove(object sender, MouseEventArgs e)

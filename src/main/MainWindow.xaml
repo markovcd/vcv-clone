@@ -10,56 +10,83 @@
         Height="450"
         d:DataContext="{d:DesignInstance local:MainViewModel}"
         mc:Ignorable="d">
-    <Grid>
-        <ScrollViewer x:Name="ModuleListScrollViewer"
-                      HorizontalScrollBarVisibility="Visible"
-                      VerticalScrollBarVisibility="Visible">
-            <ItemsControl Width="{x:Static local:MainViewModel.CanvasWidth}"
-                          Height="{x:Static local:MainViewModel.CanvasHeight}"
-                          Background="Bisque"
-                          ItemsSource="{Binding Modules}"
-                          MouseDown="ModuleList_OnMouseDown"
-                          MouseMove="ModuleList_OnMouseMove"
-                          MouseUp="ModuleList_OnMouseUp"
-                          PreviewMouseWheel="ModuleList_PreviewMouseWheel">
+  <Grid>
+    <ScrollViewer x:Name="ModuleListScrollViewer"
+                  HorizontalScrollBarVisibility="Visible"
+                  VerticalScrollBarVisibility="Visible">
+      <Grid>
+        <ItemsControl Width="{x:Static local:MainViewModel.CanvasWidth}"
+                      Height="{x:Static local:MainViewModel.CanvasHeight}"
+                      Background="Bisque"
+                      x:Name="moduleList"
+                      ItemsSource="{Binding Modules}"
+                      MouseDown="ModuleList_OnMouseDown"
+                      MouseMove="ModuleList_OnMouseMove"
+                      MouseUp="ModuleList_OnMouseUp"
+                      PreviewMouseWheel="ModuleList_PreviewMouseWheel">
 
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas IsItemsHost="True" Loaded="MainCanvas_OnLoaded">
-                            <Canvas.LayoutTransform>
-                                <ScaleTransform ScaleX="1" ScaleY="1" />
-                            </Canvas.LayoutTransform>
-                        </Canvas>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemContainerStyle>
-                    <Style TargetType="ContentPresenter">
-                        <Setter Property="Canvas.Left" Value="{Binding Position.X}" />
-                        <Setter Property="Canvas.Top" Value="{Binding Position.Y}" />
-                        <EventSetter Event="MouseLeftButtonUp" Handler="Module_MouseLeftButtonUp" />
-                        <EventSetter Event="MouseLeftButtonDown" Handler="Module_MouseLeftButtonDown" />
-                        <EventSetter Event="MouseMove" Handler="Module_MouseMove" />
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
-                <ItemsControl.Item
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type engine:ModuleInstance}">
-                        <Grid>
-                            <Border Background="DarkGray">
-                                <Border.Effect>
-                                    <DropShadowEffect BlurRadius="4"
-                                                      Direction="330"
-                                                      Opacity="0.5"
-                                                      ShadowDepth="4"
-                                                      Color="Gray" />
-                                </Border.Effect>
-                                <ContentPresenter Content="{Binding UserInterface}" />
-                            </Border>
-                            <Border BorderBrush="RoyalBlue" BorderThickness="1" />
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-    </Grid>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <Canvas IsItemsHost="True" Loaded="MainCanvas_OnLoaded">
+                <Canvas.LayoutTransform>
+                  <ScaleTransform ScaleX="1" ScaleY="1" />
+                </Canvas.LayoutTransform>
+              </Canvas>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemContainerStyle>
+            <Style TargetType="ContentPresenter">
+              <Setter Property="Canvas.Left" Value="{Binding Position.X}" />
+              <Setter Property="Canvas.Top" Value="{Binding Position.Y}" />
+              <EventSetter Event="MouseLeftButtonUp" Handler="Module_MouseLeftButtonUp" />
+              <EventSetter Event="MouseLeftButtonDown" Handler="Module_MouseLeftButtonDown" />
+              <EventSetter Event="MouseMove" Handler="Module_MouseMove" />
+            </Style>
+          </ItemsControl.ItemContainerStyle>
+
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type engine:ModuleInstance}">
+              <Grid>
+                <Border Background="DarkGray">
+                  <Border.Effect>
+                    <DropShadowEffect BlurRadius="4"
+                                      Direction="330"
+                                      Opacity="0.5"
+                                      ShadowDepth="4"
+                                      Color="Gray" />
+                  </Border.Effect>
+                  <ContentPresenter Content="{Binding UserInterface}" />
+                </Border>
+                <Border BorderBrush="RoyalBlue" BorderThickness="1" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl Width="{x:Static local:MainViewModel.CanvasWidth}"
+                      Height="{x:Static local:MainViewModel.CanvasHeight}"
+                      Background="Transparent"
+                      IsHitTestVisible="False"
+                      x:Name="connectionsList"
+                      ItemsSource="{Binding Connections}">
+
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <Canvas IsItemsHost="True" Loaded="ConnectorCanvas_OnLoaded">
+                <Canvas.LayoutTransform>
+                  <ScaleTransform ScaleX="1" ScaleY="1" />
+                </Canvas.LayoutTransform>
+              </Canvas>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type local:Connection}">
+              <Line Stroke="Black" StrokeThickness="2" X1="{Binding Start.X}" Y1="{Binding Start.Y}" X2="{Binding End.X}" Y2="{Binding End.Y}"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </ScrollViewer>
+  </Grid>
 </Window>

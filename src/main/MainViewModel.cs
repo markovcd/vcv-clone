@@ -14,7 +14,7 @@ public class MainViewModel
   private Position origin;
   private Position offset;
   private double scale = 1;
-
+  private Connection? currentConnection;
 
   public MainViewModel(Patch patch)
   {
@@ -75,11 +75,36 @@ public class MainViewModel
     return Math.Floor(position / GridSize) * GridSize;
   }
     
-  public ObservableCollection<ModuleInstance> Modules { get; } = new ();
+  public ObservableCollection<ModuleInstance> Modules { get; } = new();
+
+  public ObservableCollection<Connection> Connections { get; } = new();
 
   public InstanceIdentifier? CurrentInstance { get; set; }
   
   public ModuleIdentifier CurrentModule => "Penis";
+  
+  public bool StartConnecting(Position start)
+  {
+    Operation = Operation.Connecting;
+    currentConnection = new Connection { Start = start, End = start };
+    Connections.Add(currentConnection);
+    return true;
+  }
+  
+  public bool DoConnecting(Position end)
+  {
+    if (Operation != Operation.Connecting) return false;
+    currentConnection!.End = end;
+    return true;
+  }
+  
+  public bool FinishConnecting(Position end)
+  {
+    if (!DoConnecting(end)) return false;
+    Operation = Operation.None;
+    currentConnection = null;
+    return true;
+  }
   
   public void AddModule(Position position)
   {
